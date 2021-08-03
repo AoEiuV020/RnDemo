@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: init custom env
+        env:   
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
             PR_NUM=${GITHUB_REF#refs/pull/}
             PR_NUM=${PR_NUM%/merge}
@@ -26,4 +28,6 @@ jobs:
             cat .custom_env >> $GITHUB_ENV
       - name: automerge
         if: ${{ env.AUTOMERGE == 'true' }}
+        env:   
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh pr merge $PR_NUM
