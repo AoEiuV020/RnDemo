@@ -2,17 +2,8 @@ name: automerge
 on:
   pull_request:
     types:
-      - labeled
-      - unlabeled
       - synchronize
       - opened
-      - edited
-      - ready_for_review
-      - reopened
-      - unlocked
-  pull_request_review:
-    types:
-      - submitted
   check_suite:
     types:
       - completed
@@ -21,25 +12,23 @@ jobs:
   automerge:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: init custom env
+        env:   
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-            BUILD_NAME="${GITHUB_REPOSITORY#*/}"
-            num=${GITHUB_REF#refs/pull/}
-            num=${num%/merge}
-            from_user_id=$(curl "https://api.github.com/repos/$GITHUB_REPOSITORY/pulls/$num"|jq .user.id -r)
-            if test "$from_user_id" -eq "49699333"
+            PR_NUM=${GITHUB_REF#refs/pull/}
+            PR_NUM=${PR_NUM%/merge}
+            echo PR_NUM="$PR_NUM" >> .custom_env
+            from_user_name=$(gh pr view 12 --json author|jq .author.login -r)
+            if test "$from_user_name" == "dependabot"
             then
                 echo AUTOMERGE="true" >> .custom_env
             fi
-            BUILD_VERSION=pr-${num}-"$(date +'%Y%m%d%H%M%S')"
-            BUILD_NAME_WITH_VERSION="$BUILD_NAME-$BUILD_VERSION"
-            echo BUILD_NAME="$BUILD_NAME" >> .custom_env
-            echo BUILD_VERSION="$BUILD_VERSION" >> .custom_env
-            echo BUILD_NAME_WITH_VERSION="$BUILD_NAME_WITH_VERSION" >> .custom_env
             cat .custom_env
             cat .custom_env >> $GITHUB_ENV
       - name: automerge
-        if: ${{ env.AUTOMERGE == "true" }}
-        uses: "pascalgn/automerge-action@v0.14.2"
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        if: ${{ env.AUTOMERGE == 'true' }}
+        env:   
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge $PR_NUM --merge
