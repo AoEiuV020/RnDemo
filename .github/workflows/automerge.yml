@@ -31,4 +31,4 @@ jobs:
         if: ${{ env.AUTOMERGE == 'true' }}
         env:   
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr merge $PR_NUM
+        run: gh pr merge $PR_NUM --merge
