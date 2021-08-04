@@ -20,7 +20,7 @@ jobs:
             PR_NUM=${GITHUB_REF#refs/pull/}
             PR_NUM=${PR_NUM%/merge}
             echo PR_NUM="$PR_NUM" >> .custom_env
-            from_user_name=$(gh pr view 12 --json author|jq .author.login -r)
+            from_user_name=$(gh pr view $PR_NUM --json author|jq .author.login -r)
             if test "$from_user_name" == "dependabot"
             then
                 echo AUTOMERGE="true" >> .custom_env
